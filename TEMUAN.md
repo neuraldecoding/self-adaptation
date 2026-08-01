@@ -13,14 +13,18 @@ di dalam manuskrip sendiri (C1–C7), dan beberapa masalah minor (D1–D4).
 
 ## Cara verifikasi
 
-MATLAB maupun Octave tidak tersedia di mesin tempat audit ini dikerjakan. Karena
-itu:
+Tiga lapis, saling menguatkan:
 
-- Temuan yang bersifat statis (label `case`, indeks array, presedensi operator,
-  perbandingan rumus) diverifikasi dengan **pembacaan kode**.
-- Temuan yang butuh eksekusi diverifikasi dengan **port Python yang setia** di
-  `experiments/kma_py/`, yang mempertahankan seluruh detail implementasi MATLAB
-  dan hanya membuat A1–A4 bisa di-toggle. Lihat `experiments/README.md`.
+1. **Pembacaan kode** untuk temuan statis: label `case`, indeks array, presedensi
+   operator, dan perbandingan baris-per-baris terhadap rumus di manuskrip.
+2. **Eksekusi langsung sumber MATLAB** di GNU Octave 10.3.0. Berkas `.m` di `kma/`
+   dan `kma-fixed/` dijalankan **tanpa modifikasi apa pun**; lihat §E.0 dan
+   `experiments/octave/`.
+3. **Port Python yang setia** di `experiments/kma_py/` untuk memisahkan kontribusi
+   tiap cacat. Port ini mempertahankan seluruh detail implementasi MATLAB dan
+   hanya membuat A1–A4 bisa di-toggle, sehingga 4.830 run bisa dijalankan dengan
+   tujuh konfigurasi — sesuatu yang tidak praktis dilakukan di Octave. Lihat
+   `experiments/README.md`.
 
 Perbaikan minimal untuk A1–A4 ada di `kma-fixed/` (kode asli di `kma/` sengaja
 dibiarkan utuh sebagai baseline).
@@ -228,6 +232,62 @@ Tabel lengkap ada di `experiments/results/summary.md`, data mentah per-run di
 F1–F13, anggaran 25.000 evaluasi, **30 run independen** per sel (4.830 run total),
 tujuh konfigurasi.
 
+### E.0 Verifikasi langsung dengan GNU Octave 10.3
+
+Bagian ini **tidak** memakai port Python. Berkas `.m` di `kma/` dan `kma-fixed/`
+dijalankan apa adanya di GNU Octave 10.3.0 lewat `experiments/octave/run_one.m`
+(dimensi 50 untuk F1–F11, seed 1–3). Hasil mentah: `experiments/results/octave_verification.txt`.
+
+**Semantik bahasa yang menjadi dasar A1 dan A2, dibuktikan langsung:**
+
+```
+id=16 -> FOXHOLES        % case duplikat: yang cocok PERTAMA yang dieksekusi
+id=14 -> <error>         % tidak ada case yang cocok, nilai tak terdefinisi
+A(7:8,:) = ...           % array 4 baris tumbuh jadi 8, 2 baris terisi NOL
+```
+
+Replay indeks `AllHQ` dengan ukuran sebenarnya (`experiments/octave/allhq_index_demo.m`):
+
+```
+built    : rows= 80  all-zero rows= 0
+published: rows=197  all-zero rows=69   <- individu hantu di titik origin
+fixed    : rows= 80  all-zero rows= 0
+```
+
+Angka 197 baris dan 69 baris nol **persis sama** dengan yang diprediksi port Python.
+
+**Hasil menjalankan algoritmanya (`opt`, 3 seed):**
+
+| Func | `kma/` (baseline terbit) | `kma-fixed/` (A1–A4 diperbaiki) |
+|---|---|---|
+| F1 Sphere | **0 · 0 · 0** | 57,2 · 113,9 · 22,1 |
+| F5 Rosenbrock | 46,8 · 46,8 · 47,2 | 1,09e4 · 1,35e4 · 1,79e5 |
+| F6 Step | **0 · 0 · 0** | 49 · 92 · 47 |
+| F9 Rastrigin | **0 · 0 · 0** | 107,6 · 52,7 · 33,4 |
+| F10 Ackley | 4,44e-16 ×3 | 1,35 · 2,58 · 2,13 |
+| F11 Griewank | **0 · 0 · 0** | 1,51 · 1,82 · 1,19 |
+| F14 Foxholes | **error ×3** | 0,998004 ×3 |
+| F16 Six Hump Camel | 12,6705 ×3 | −1,03160 ×3 |
+
+**Baseline mereproduksi angka manuskrip, termasuk MFE-nya:**
+
+| | Octave, `kma/`, dim 50 | Manuskrip |
+|---|---|---|
+| F9 mean function evaluations | 140–145 | 145,33 (§3.3) |
+| F6 mean function evaluations | 45–60 | 55,83 (Tabel 3, dim 100) |
+| F11 mean function evaluations | 160–180 | 169,83 (Tabel 3, dim 100) |
+| F5 nilai optimum | 46,8–47,2 | 48,31 (Tabel 2) |
+| F16 | 12,6705 | −1,032 → **tidak cocok** (lihat A1) |
+
+Kecocokan MFE sampai ke angka satuan menunjukkan bahwa yang dijalankan di sini
+memang kode yang sama dengan yang menghasilkan Tabel 2–5 — kecuali untuk F14 dan
+F16, yang tidak mungkin menghasilkan angka di Tabel 2 dengan kode ini.
+
+`kma-fixed/` memperbaiki A2, A3, dan A4 sekaligus, jadi tabel di atas tidak
+memisahkan kontribusi masing-masing. Pemisahan itu ada di §E.2 (port Python),
+yang menunjukkan bahwa A4 sendirian tidak mengubah guaranty sama sekali dan yang
+menentukan adalah A2+A3.
+
 ### E.1 Port ini memang mereproduksi perilaku kode terbit
 
 Sebelum menafsirkan selisih apa pun, port perlu dibuktikan setia. Tiga tanda
@@ -376,14 +436,21 @@ waktu, karena nama fungsinya sama.
 
 ## G. Batasan audit ini
 
-- Perbaikan MATLAB di `kma-fixed/` **belum pernah dieksekusi** di MATLAB atau
-  Octave; keduanya tidak tersedia di mesin tempat audit dikerjakan. Kebenarannya
-  diverifikasi lewat pembacaan kode dan lewat replika Python. Jalankan sekali di
-  MATLAB sebelum dipakai untuk publikasi.
-- Angka eksperimen berasal dari port Python, bukan dari MATLAB. Aliran bilangan
-  acaknya berbeda, jadi nilai per-run tidak akan identik dengan MATLAB; yang
+- `kma/` dan `kma-fixed/` sudah dieksekusi di **GNU Octave 10.3.0**, bukan di
+  MATLAB R2017a. Octave menjalankan kedua versi tanpa modifikasi dan mereproduksi
+  angka manuskrip pada baseline (§E.0), tetapi tetap bukan MATLAB. Satu
+  ketergantungan diganti untuk verifikasi: `levy.m` memanggil
+  `random('Normal',…)` dari Statistics Toolbox, yang di Octave disediakan lewat
+  shim `experiments/octave/random.m` (`mu + sigma.*randn`, ekuivalen persis).
+  Shim itu tidak boleh diletakkan di path MATLAB. Jalankan sekali di MATLAB
+  sebelum dipakai untuk publikasi.
+- Angka pada §E.1–§E.8 berasal dari port Python, bukan dari MATLAB atau Octave.
+  Aliran bilangan acaknya berbeda, jadi nilai per-run tidak akan identik; yang
   dibandingkan adalah perilaku agregat antar konfigurasi yang berbagi port yang
-  sama.
+  sama. §E.0 memakai sumber MATLAB asli dan berfungsi sebagai pemeriksaan silang.
+- Sweep Octave di §E.0 hanya 3 seed per sel (bukan 30) karena satu run 50-dimensi
+  memakan ~16 detik. Cukup untuk memastikan arah dan besaran efeknya, tidak cukup
+  untuk statistik seperti Tabel 2.
 - Eksperimen dijalankan pada dimensi 50 saja (F1–F13). Analisis skalabilitas
   Tabel 3–5 (100/500/1000 dimensi) tidak direplikasi, kecuali perbandingan
   `f_Rosenbrock(0)` pada A3 yang dihitung analitik.

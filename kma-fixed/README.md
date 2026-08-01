@@ -34,7 +34,19 @@ cd kma-fixed        % atau: cd kma  untuk menjalankan baseline
 Main2D
 ```
 
-Perbaikan ini belum pernah dieksekusi di MATLAB/Octave (tidak tersedia di mesin
-tempat audit dilakukan) — kebenarannya diverifikasi lewat pembacaan kode dan lewat
-replika Python di `../experiments/`. Jalankan sekali di MATLAB sebelum dipakai
-untuk publikasi.
+## Status verifikasi
+
+Kedua versi sudah dijalankan di **GNU Octave 10.3.0** tanpa modifikasi; lihat
+`../experiments/octave/` dan `../TEMUAN.md` §E.0. Ringkasnya (dim 50, seed 1–3):
+
+| Func | `../kma/` | `kma-fixed/` |
+|---|---|---|
+| F14 | error di 3/3 run | 0,998004 |
+| F16 | 12,6705 (Foxholes) | −1,03160 |
+| F1 | 0 · 0 · 0 | 57,2 · 113,9 · 22,1 |
+| F9 | 0 · 0 · 0 | 107,6 · 52,7 · 33,4 |
+
+Belum dijalankan di MATLAB R2017a. Satu catatan kompatibilitas: `levy.m` memanggil
+`random('Normal',…)` dari Statistics Toolbox, yang di Octave disediakan lewat shim
+`../experiments/octave/random.m`. Jalankan sekali di MATLAB sebelum dipakai untuk
+publikasi.

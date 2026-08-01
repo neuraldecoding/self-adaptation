@@ -20,13 +20,16 @@
 
  function fx = Evaluation(x)
 
- global FunctionID NumEva
+ global FunctionID EvalCount
 
  % FIX A4: every call to the objective function is one function evaluation.
  % The published code incremented NumEva by PopSize/SwarmSize per generation,
  % which undercounts the real number of evaluations by 11-20% and misses the
  % initial population and the second-stage ConsPop entirely.
- NumEva = NumEva + 1;
+ % The counter is named EvalCount because MATLAB does not allow a function
+ % output argument (NumEva in KMA2D/KMA3D) to be declared global; KMA2D/KMA3D
+ % copy EvalCount into NumEva just before returning.
+ EvalCount = EvalCount + 1;
 
  Dim = length(x);
  

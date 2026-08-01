@@ -3,7 +3,11 @@
 Harness ini menjawab satu pertanyaan: **seberapa besar tiap cacat A1–A4 menyumbang
 pada hasil yang dilaporkan di Tabel 2 manuskrip?**
 
-MATLAB/Octave tidak tersedia di mesin tempat audit ini dikerjakan, jadi
+Ada dua jalur. `octave/` menjalankan sumber MATLAB apa adanya di GNU Octave 10.3
+sebagai pemeriksaan silang (lihat `octave/README.md`), sedangkan `kma_py/` dipakai
+untuk memisahkan kontribusi tiap cacat lewat ribuan run — sesuatu yang tidak
+praktis dilakukan di Octave, di mana satu run 50-dimensi memakan ~16 detik.
+
 `kma_py/kma.py` adalah **port Python yang setia** dari `kma/KMA2D.m`. Seluruh
 pilihan struktural dipertahankan apa adanya — inisialisasi di sudut
 (`PopConsInitialization`), 40 micro-swarm pada tahap dua, `MutRadius = 0.5`,
