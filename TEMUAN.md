@@ -235,8 +235,9 @@ tujuh konfigurasi.
 ### E.0 Verifikasi langsung dengan GNU Octave 10.3
 
 Bagian ini **tidak** memakai port Python. Berkas `.m` di `kma/` dan `kma-fixed/`
-dijalankan apa adanya di GNU Octave 10.3.0 lewat `experiments/octave/run_one.m`
-(dimensi 50 untuk F1–F11, seed 1–3). Hasil mentah: `experiments/results/octave_verification.txt`.
+dijalankan apa adanya di GNU Octave 10.3.0 lewat `experiments/octave/run_one.m`:
+**F1–F13 pada dimensi 50**, ditambah F14 dan F16 pada dimensi bawaannya, masing-masing
+3 seed — 90 run. Hasil mentah: `experiments/results/octave_verification.txt`.
 
 **Semantik bahasa yang menjadi dasar A1 dan A2, dibuktikan langsung:**
 
@@ -256,32 +257,63 @@ fixed    : rows= 80  all-zero rows= 0
 
 Angka 197 baris dan 69 baris nol **persis sama** dengan yang diprediksi port Python.
 
-**Hasil menjalankan algoritmanya (`opt`, 3 seed):**
+**Hasil menjalankan algoritmanya** (rata-rata 3 seed; kolom manuskrip dari Tabel 2,
+dimensi 50):
 
-| Func | `kma/` (baseline terbit) | `kma-fixed/` (A1–A4 diperbaiki) |
+| Func | `kma/` (baseline terbit) | manuskrip | `kma-fixed/` (A1–A4 diperbaiki) |
+|---|---|---|---|
+| F1 Sphere | **0** | 0 | 6,44e+01 |
+| F2 Schwefel 2.22 | **0** | 0 | 5,11e+00 |
+| F3 Schwefel 1.2 | **0** | 0 | 3,05e+02 |
+| F4 Schwefel 2.21 | **0** | 0 | 1,87e+00 |
+| F5 Rosenbrock | 4,69e+01 | 4,831e+01 | 6,78e+04 |
+| F6 Step | **0** | 0 | 6,27e+01 |
+| F7 Quartic | 2,68e-04 | 1,715e-04 | 3,57e-03 |
+| F8 Schwefel | −1,699e+04 | −1,701e+04 | −1,495e+04 |
+| F9 Rastrigin | **0** | 0 | 6,46e+01 |
+| F10 Ackley | 4,44e-16 | 8,882e-16 | 2,02e+00 |
+| F11 Griewank | **0** | 0 | 1,51e+00 |
+| F12 Penalized | 1,04e-03 | 2,799e-03 | 7,91e-02 |
+| F13 Penalized2 | 6,79e-02 | 5,270e-02 | 6,59e+00 |
+| F14 Foxholes | **error di 3/3 run** | 9,980e-01 | 9,980e-01 |
+| F16 Six Hump Camel | **1,267e+01** | −1,032e+00 | −1,032e+00 |
+
+Baseline mereproduksi Tabel 2 pada **13 dari 15** fungsi yang diuji — termasuk
+tujuh nilai nol eksak, dan F8/F12/F13 yang berada pada orde yang sama. Dua yang
+gagal adalah persis F14 dan F16, yaitu temuan A1.
+
+**Kecocokan juga terlihat pada MFE**, yang merupakan pemeriksaan independen dari
+nilai optimum. Kolom manuskrip diambil dari Tabel 3 (dimensi 100) karena Tabel 2
+tidak melaporkan MFE; menurut Tabel 3–5 sendiri, MFE KMA nyaris tidak berubah
+terhadap dimensi, sehingga perbandingan ini tetap bermakna:
+
+| Func | Octave, `kma/`, dim 50 | Manuskrip (Tabel 3, dim 100) |
 |---|---|---|
-| F1 Sphere | **0 · 0 · 0** | 57,2 · 113,9 · 22,1 |
-| F5 Rosenbrock | 46,8 · 46,8 · 47,2 | 1,09e4 · 1,35e4 · 1,79e5 |
-| F6 Step | **0 · 0 · 0** | 49 · 92 · 47 |
-| F9 Rastrigin | **0 · 0 · 0** | 107,6 · 52,7 · 33,4 |
-| F10 Ackley | 4,44e-16 ×3 | 1,35 · 2,58 · 2,13 |
-| F11 Griewank | **0 · 0 · 0** | 1,51 · 1,82 · 1,19 |
-| F14 Foxholes | **error ×3** | 0,998004 ×3 |
-| F16 Six Hump Camel | 12,6705 ×3 | −1,03160 ×3 |
+| F6 Step | **55,0** | 55,83 |
+| F11 Griewank | **170,0** | 169,83 |
+| F9 Rastrigin | **143,3** | 150,5 (dan 145,33 di §3.3, dim 50) |
+| F1 Sphere | 2.203 | 2.087 |
+| F3 Schwefel 1.2 | 2.403 | 2.464 |
+| F2 Schwefel 2.22 | 4.165 | 3.923 |
+| F4 Schwefel 2.21 | 4.338 | 4.144 |
+| F5, F7, F8, F10, F12, F13 | 25.000–25.067 | 25.009–25.150 |
 
-**Baseline mereproduksi angka manuskrip, termasuk MFE-nya:**
+Untuk F6, F9, dan F11, kecocokan MFE mencapai orde satuan — dari angka yang
+besarnya hanya puluhan sampai ratusan. Ini praktis menutup kemungkinan kebetulan:
+kode di `kma/` memang kode yang menghasilkan Tabel 2–5, yang membuat pengecualian
+F14 dan F16 semakin tegas.
 
-| | Octave, `kma/`, dim 50 | Manuskrip |
-|---|---|---|
-| F9 mean function evaluations | 140–145 | 145,33 (§3.3) |
-| F6 mean function evaluations | 45–60 | 55,83 (Tabel 3, dim 100) |
-| F11 mean function evaluations | 160–180 | 169,83 (Tabel 3, dim 100) |
-| F5 nilai optimum | 46,8–47,2 | 48,31 (Tabel 2) |
-| F16 | 12,6705 | −1,032 → **tidak cocok** (lihat A1) |
+`kma-fixed/` memperbaiki A2, A3, dan A4 sekaligus, jadi tabel di atas tidak
+memisahkan kontribusi masing-masing. Pemisahan itu ada di §E.2 (port Python),
+yang menunjukkan bahwa A4 sendirian tidak mengubah guaranty sama sekali dan yang
+menentukan adalah A2+A3.
 
-Kecocokan MFE sampai ke angka satuan menunjukkan bahwa yang dijalankan di sini
-memang kode yang sama dengan yang menghasilkan Tabel 2–5 — kecuali untuk F14 dan
-F16, yang tidak mungkin menghasilkan angka di Tabel 2 dengan kode ini.
+Perhatikan juga polanya: pada tujuh fungsi yang optimumnya di titik origin
+(F1–F4, F6, F9, F11) baseline memberi **0 eksak** dan `kma-fixed/` gagal total.
+Pada F8 — satu-satunya fungsi multimodal berdimensi tinggi yang optimumnya jauh
+dari origin, di `(420,9687; …)` — selisihnya hanya ~12% (−1,699e4 vs −1,495e4).
+Ini persis yang diharapkan jika keunggulan baseline berasal dari bias menuju
+origin, bukan dari kemampuan pencarian.
 
 `kma-fixed/` memperbaiki A2, A3, dan A4 sekaligus, jadi tabel di atas tidak
 memisahkan kontribusi masing-masing. Pemisahan itu ada di §E.2 (port Python),
