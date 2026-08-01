@@ -1,0 +1,321 @@
+--- kma/Evaluation.m	2026-08-01 09:14:08.365256031 +0700
++++ kma-fixed/Evaluation.m	2026-08-01 09:33:01.667889593 +0700
+@@ -14,11 +14,20 @@
+ % dispersion coefficient estimation in groundwater, Future Generation 
+ % Computer Systems,2019,91:601-610, https://doi.org/10.1016/j.future.2018.05.037.
+ %--------------------------------------------------------------------------
++% PATCHED COPY -- not the upstream release. The pristine v1.0.0 sources are kept
++% in ../kma/ as the baseline. Changes are marked with "FIX Ax", see ../TEMUAN.md.
++%--------------------------------------------------------------------------
+ 
+  function fx = Evaluation(x)
+- 
+- global FunctionID
+- 
++
++ global FunctionID NumEva
++
++ % FIX A4: every call to the objective function is one function evaluation.
++ % The published code incremented NumEva by PopSize/SwarmSize per generation,
++ % which undercounts the real number of evaluations by 11-20% and misses the
++ % initial population and the second-stage ConsPop entirely.
++ NumEva = NumEva + 1;
++
+  Dim = length(x);
+  
+  switch FunctionID
+@@ -98,7 +107,11 @@
+ %%%%%%%%%%%%%%%%%%%%%%%%%%fixed-dimensionalmultimodalfunction%%%%%%%%%%%%%%
+ 
+ %Foxholes
+-case 16
++% FIX A1: this case was labelled "case 16" in the published code. Foxholes is
++% F14 (GetFunction.m sets Nvar=2, Ra=65, MV=0.998 for FunctionID 14). Because
++% MATLAB runs the first matching case, F16 executed Foxholes instead of Six
++% Hump Camel, and F14 matched no case at all, leaving fx unassigned.
++case 14
+   a=[-32 -16 0 16 32 -32 -16 0 16 32 -32 -16 0 16 32 -32 -16 0 16 32 -32 -16 0 16 32;...
+   -32 -32 -32 -32 -32 -16 -16 -16 -16 -16 0 0 0 0 0 16 16 16 16 16 32 32 32 32 32];
+     for j=1:25
+--- kma/KMA2D.m	2026-08-01 09:14:08.365865097 +0700
++++ kma-fixed/KMA2D.m	2026-08-01 09:32:56.448211184 +0700
+@@ -14,12 +14,18 @@
+ % Email: suyanto@telkomuniversity.ac.id 
+ % Website: https://suyanto.staff.telkomuniversity.ac.id
+ %=================================================================================
++% PATCHED COPY -- not the upstream release. The pristine v1.0.0 sources are kept
++% in ../kma/ as the baseline. This copy applies the minimal fixes A1-A4 that are
++% documented in ../TEMUAN.md; every change is marked with a "FIX Ax" comment.
++% Deviations B1-B12 in TEMUAN.md are deliberately NOT changed here.
++%=================================================================================
+ 
+ function [BestIndiv,OptVal,NumEva,fopt,fmean,ProcTime,EvoPopSize] = KMA2D
+ 
+ tic
+ 
+ global Nvar FthresholdFX MaxNumEva
++global EvalCount                     % FIX A4: real function-evaluation counter
+ global PopSize MinAdaPopSize MaxAdaPopSize
+ global BigMales BigMalesFX
+ global Female FemaleFX
+@@ -29,6 +35,7 @@
+ global OneElitFX
+ 
+ %% Generate the initial population of PopSize Komodo individuals
++EvalCount = 0;   % FIX A4: Evaluation.m increments this on every call
+ Pop = PopConsInitialization(PopSize);
+ 
+ %% Calculate all fitness values of the PopSize Komodo individuals
+@@ -55,7 +62,6 @@
+ %--------------------------------------------------------------------------
+ IsGlobal    = 0;    % Boolean to check if the global optimum is reached
+ ImproveRate = 0;    % Improve rate to examine the benchmark function
+-NumEva      = 0;    % Number of evalutions
+ Gen         = 0;    % Generation
+ MaxGenExam1 = 100;  % Maximum generation of the first examination
+ MaxGenExam2 = 1000; % Maximum generation of the second examination
+@@ -67,8 +73,7 @@
+ 
+ while Gen < MaxGenExam2
+     Gen    = Gen + 1;           % Increament of generation
+-    NumEva = NumEva + PopSize;  % Number of evalutaions
+-   
++
+     BigMales      = Pop(1:NumBM,:);      % Big Males
+     BigMalesFX    = FX(1:NumBM);         % Fitness of Big Males
+     Female        = Pop(NumBM+1,:);      % Females
+@@ -115,7 +120,7 @@
+ % Second Stage: solving the complex benchmark functions using
+ % self-adaptation of population size
+ %--------------------------------------------------------------------------
+-if ~IsGlobal && NumEva <= MaxNumEva
++if ~IsGlobal && EvalCount <= MaxNumEva
+     FirstStagePop = Pop;  % Keep five individuals in the population of the frst stage of evolution
+     FirstStageFX  = FX;   % Keep five fitness values in the population of the frst stage of evolution
+     SwarmSize     = size(FirstStagePop,1);  % Micro-swarm size: 2 BM, 1 Female, 2 SM
+@@ -142,7 +147,7 @@
+     FX            = [FirstStageFX ConsPopFX];  % Combine the first and second FX
+     OneElitFX     = min(FX);                   % The best-so-far fitness to check improvement or stagnation 
+     
+-    while NumEva < MaxNumEva
++    while EvalCount < MaxNumEva
+         AdaPopSize = size(Pop,1);  % Adaptive PopSize is equal to MaxAdaPopSize = 200 individuals
+         AllHQ      = [];           % All High Quality (Big Males)
+         AllHQFX    = [];           % All High Quality Fitness
+@@ -171,15 +176,18 @@
+             MoveBigMalesFemaleSecondStage;  % Move the BigMales and Female as well in the second stage
+             MoveSmallMalesSecondStage;      % Move (Mlipir) the SmallMales in the second stage
+             
+-            AllHQ(ind:ind+NumBM-1,:) = BigMales;
+-            AllHQFX(ind:ind+NumBM-1) = BigMalesFX;
++            % FIX A2: AllHQ holds NumBM rows per micro-swarm, but ind steps by
++            % SwarmSize over Pop. The published indexing overwrote the wrong
++            % rows and grew AllHQ/AllHQFX with zero rows, injecting phantom
++            % individuals at the origin with fitness 0 into the high-quality set.
++            IndHQ = ((ind-1)/SwarmSize)*NumBM + 1;
++            AllHQ(IndHQ:IndHQ+NumBM-1,:) = BigMales;
++            AllHQFX(IndHQ:IndHQ+NumBM-1) = BigMalesFX;
+             
+             % Resulted new population
+             Pop(ind:ind+SwarmSize-1,:) = [BigMales ; Female; SmallMales];
+             FX(ind:ind+SwarmSize-1)    = [BigMalesFX FemaleFX SmallMalesFX];
+-            
+-            NumEva = NumEva + SwarmSize;   % Number of evalutaions
+-            
++
+             [~,IndMin] = min(FX);
+             OptVal     = FX(IndMin);       % Optimum Value of the given problem
+             if OptVal <= FthresholdFX      % Optimum Value reaches the global optimum
+@@ -245,12 +253,10 @@
+                 end
+                 Pop(end+1:end+size(NewPop,1),:) = NewPop;
+                 FX(end+1:end+size(NewPop,1))    = NewPopFX;
+-                NumEva = NumEva + NumAddPop;   % Number of evalutaions
+             else  % NumAddPop == 0; % No adding population
+                 for nn=1:size(Pop,1)
+                     [Pop(nn,:), FX(nn)] = Reposition(Pop(nn,:),FX(nn));
+                 end
+-                NumEva = NumEva + size(Pop,1);
+             end
+             GenStagnan = 0;
+         end
+@@ -264,6 +270,7 @@
+     end % while Evolution
+ end % if ~IsGlobal
+ 
++NumEva   = EvalCount;   % FIX A4: report the real number of function evaluations
+ ProcTime = toc;
+ 
+ 
+@@ -481,7 +488,10 @@
+         M = A(1:D);           % Moving the WM based on the D-attributes
+         B = zeros(1,Nvar);    % Initialize Binary pattern
+         B(M) = 1;             % Binary pattern
+-        VMlipir = VMlipir + rand(1,Nvar) .* (HQ(ind,:).*B)-(SmallMales(ww,:).*B);
++        % FIX A3: MATLAB precedence made the published line evaluate as
++        % rand.*(HQ.*B) - (SM.*B), i.e. a contraction towards the coordinate
++        % origin instead of Eq.(8) of the paper. Parentheses added.
++        VMlipir = VMlipir + rand(1,Nvar) .* ((HQ(ind,:) - SmallMales(ww,:)) .* B);
+         FolHQ = FolHQ + 1;
+         if FolHQ >= MaxFolHQ
+             break
+@@ -531,7 +541,10 @@
+         M = A(1:D);           % Moving the WM based on the D-attributes
+         B = zeros(1,Nvar);    % Initialize Binary pattern
+         B(M) = 1;             % Binary pattern
+-        VMlipir = VMlipir + rand(1,Nvar) .* (HQ(ind,:).*B)-(SmallMales(ww,:).*B);
++        % FIX A3: MATLAB precedence made the published line evaluate as
++        % rand.*(HQ.*B) - (SM.*B), i.e. a contraction towards the coordinate
++        % origin instead of Eq.(8) of the paper. Parentheses added.
++        VMlipir = VMlipir + rand(1,Nvar) .* ((HQ(ind,:) - SmallMales(ww,:)) .* B);
+         FolHQ = FolHQ + 1;
+         if FolHQ >= MaxFolHQ
+             break
+--- kma/KMA3D.m	2026-08-01 09:14:08.366027582 +0700
++++ kma-fixed/KMA3D.m	2026-08-01 09:32:59.726009241 +0700
+@@ -14,12 +14,18 @@
+ % Email: suyanto@telkomuniversity.ac.id 
+ % Website: https://suyanto.staff.telkomuniversity.ac.id
+ %=================================================================================
++% PATCHED COPY -- not the upstream release. The pristine v1.0.0 sources are kept
++% in ../kma/ as the baseline. This copy applies the minimal fixes A1-A4 that are
++% documented in ../TEMUAN.md; every change is marked with a "FIX Ax" comment.
++% Deviations B1-B12 in TEMUAN.md are deliberately NOT changed here.
++%=================================================================================
+ 
+ function [BestIndiv,OptVal,NumEva,fopt,fmean,ProcTime,EvoPopSize] = KMA3D
+ 
+ tic
+ 
+ global FunctionID Nvar Ra Rb FthresholdFX MaxNumEva
++global EvalCount                     % FIX A4: real function-evaluation counter
+ global PopSize MinAdaPopSize MaxAdaPopSize
+ global BigMales BigMalesFX
+ global Female FemaleFX
+@@ -29,6 +35,7 @@
+ global OneElitFX
+ 
+ %% Generate the initial population of PopSize Komodo individuals
++EvalCount = 0;   % FIX A4: Evaluation.m increments this on every call
+ Pop = PopConsInitialization(PopSize);
+ 
+ %% Calculate all fitness values of the PopSize Komodo individuals
+@@ -63,11 +70,13 @@
+ limit2  = size(yg,1);
+ zg      = zeros(limit1,limit2);
+ 
++EvalCountPlot = EvalCount;   % FIX A4: mesh sampling is plotting, not searching
+ for j=1:limit1
+     for k=1:limit2
+         zg(j,k) = Evaluation([xg(j,k) yg(j,k)]);  % Only for the first two dimensions
+     end
+ end
++EvalCount = EvalCountPlot;   % FIX A4: exclude the mesh from the evaluation budget
+ 
+ surfc(xg,yg,zg,'LineStyle','none')
+ colormap summer
+@@ -97,7 +106,6 @@
+ %--------------------------------------------------------------------------
+ IsGlobal    = 0;    % Boolean to check if the global optimum is reached
+ ImproveRate = 0;    % Improve rate to examine the benchmark function
+-NumEva      = 0;    % Number of evalutions
+ Gen         = 0;    % Generation
+ MaxGenExam1 = 100;  % Maximum generation of the first examination
+ MaxGenExam2 = 1000; % Maximum generation of the second examination
+@@ -109,8 +117,7 @@
+ 
+ while Gen < MaxGenExam2
+     Gen    = Gen + 1;           % Increament of generation
+-    NumEva = NumEva + PopSize;  % Number of evalutaions
+-   
++
+     BigMales      = Pop(1:NumBM,:);      % Big Males
+     BigMalesFX    = FX(1:NumBM);         % Fitness of Big Males
+     Female        = Pop(NumBM+1,:);      % Females
+@@ -163,7 +170,7 @@
+ % Second Stage: solving the complex benchmark functions using
+ % self-adaptation of population size
+ %--------------------------------------------------------------------------
+-if ~IsGlobal && NumEva <= MaxNumEva
++if ~IsGlobal && EvalCount <= MaxNumEva
+     FirstStagePop = Pop;  % Keep five individuals in the population of the frst stage of evolution
+     FirstStageFX  = FX;   % Keep five fitness values in the population of the frst stage of evolution
+     SwarmSize     = size(FirstStagePop,1);  % Micro-swarm size: 2 BM, 1 Female, 2 SM
+@@ -190,7 +197,7 @@
+     FX            = [FirstStageFX ConsPopFX];  % Combine the first and second FX
+     OneElitFX     = min(FX);                   % The best-so-far fitness to check improvement or stagnation 
+     
+-    while NumEva < MaxNumEva
++    while EvalCount < MaxNumEva
+         AdaPopSize = size(Pop,1);  % Adaptive PopSize is equal to MaxAdaPopSize = 200 individuals
+         AllHQ      = [];           % All High Quality (Big Males)
+         AllHQFX    = [];           % All High Quality Fitness
+@@ -219,15 +226,18 @@
+             MoveBigMalesFemaleSecondStage;  % Move the BigMales and Female as well in the second stage
+             MoveSmallMalesSecondStage;      % Move (Mlipir) the SmallMales in the second stage
+             
+-            AllHQ(ind:ind+NumBM-1,:) = BigMales;
+-            AllHQFX(ind:ind+NumBM-1) = BigMalesFX;
++            % FIX A2: AllHQ holds NumBM rows per micro-swarm, but ind steps by
++            % SwarmSize over Pop. The published indexing overwrote the wrong
++            % rows and grew AllHQ/AllHQFX with zero rows, injecting phantom
++            % individuals at the origin with fitness 0 into the high-quality set.
++            IndHQ = ((ind-1)/SwarmSize)*NumBM + 1;
++            AllHQ(IndHQ:IndHQ+NumBM-1,:) = BigMales;
++            AllHQFX(IndHQ:IndHQ+NumBM-1) = BigMalesFX;
+             
+             % Resulted new population
+             Pop(ind:ind+SwarmSize-1,:) = [BigMales ; Female; SmallMales];
+             FX(ind:ind+SwarmSize-1)    = [BigMalesFX FemaleFX SmallMalesFX];
+-            
+-            NumEva = NumEva + SwarmSize;   % Number of evalutaions
+-            
++
+             [~,IndMin] = min(FX);
+             OptVal     = FX(IndMin);       % Optimum Value of the given problem
+             if OptVal <= FthresholdFX      % Optimum Value reaches the global optimum
+@@ -299,12 +309,10 @@
+                 end
+                 Pop(end+1:end+size(NewPop,1),:) = NewPop;
+                 FX(end+1:end+size(NewPop,1))    = NewPopFX;
+-                NumEva = NumEva + NumAddPop;   % Number of evalutaions
+             else  % NumAddPop == 0; % No adding population
+                 for nn=1:size(Pop,1)
+                     [Pop(nn,:), FX(nn)] = Reposition(Pop(nn,:),FX(nn));
+                 end
+-                NumEva = NumEva + size(Pop,1);
+             end
+             GenStagnan = 0;
+         end
+@@ -318,6 +326,7 @@
+     end % while Evolution
+ end % if ~IsGlobal
+ 
++NumEva   = EvalCount;   % FIX A4: report the real number of function evaluations
+ ProcTime = toc;
+ 
+ 
+@@ -535,7 +544,10 @@
+         M = A(1:D);           % Moving the WM based on the D-attributes
+         B = zeros(1,Nvar);    % Initialize Binary pattern
+         B(M) = 1;             % Binary pattern
+-        VMlipir = VMlipir + rand(1,Nvar) .* (HQ(ind,:).*B)-(SmallMales(ww,:).*B);
++        % FIX A3: MATLAB precedence made the published line evaluate as
++        % rand.*(HQ.*B) - (SM.*B), i.e. a contraction towards the coordinate
++        % origin instead of Eq.(8) of the paper. Parentheses added.
++        VMlipir = VMlipir + rand(1,Nvar) .* ((HQ(ind,:) - SmallMales(ww,:)) .* B);
+         FolHQ = FolHQ + 1;
+         if FolHQ >= MaxFolHQ
+             break
+@@ -585,7 +597,10 @@
+         M = A(1:D);           % Moving the WM based on the D-attributes
+         B = zeros(1,Nvar);    % Initialize Binary pattern
+         B(M) = 1;             % Binary pattern
+-        VMlipir = VMlipir + rand(1,Nvar) .* (HQ(ind,:).*B)-(SmallMales(ww,:).*B);
++        % FIX A3: MATLAB precedence made the published line evaluate as
++        % rand.*(HQ.*B) - (SM.*B), i.e. a contraction towards the coordinate
++        % origin instead of Eq.(8) of the paper. Parentheses added.
++        VMlipir = VMlipir + rand(1,Nvar) .* ((HQ(ind,:) - SmallMales(ww,:)) .* B);
+         FolHQ = FolHQ + 1;
+         if FolHQ >= MaxFolHQ
+             break
