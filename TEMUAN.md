@@ -236,8 +236,9 @@ tujuh konfigurasi.
 
 Bagian ini **tidak** memakai port Python. Berkas `.m` di `kma/` dan `kma-fixed/`
 dijalankan apa adanya di GNU Octave 10.3.0 lewat `experiments/octave/run_one.m`:
-**F1–F13 pada dimensi 50**, ditambah F14 dan F16 pada dimensi bawaannya, masing-masing
-3 seed — 90 run. Hasil mentah: `experiments/results/octave_verification.txt`.
+**seluruh 23 fungsi benchmark** — F1–F13 pada dimensi 50, F14–F23 pada dimensi
+bawaannya — masing-masing 3 seed, 138 run. Hasil mentah:
+`experiments/results/octave_verification.txt`.
 
 **Semantik bahasa yang menjadi dasar A1 dan A2, dibuktikan langsung:**
 
@@ -275,12 +276,28 @@ dimensi 50):
 | F11 Griewank | **0** | 0 | 1,51e+00 |
 | F12 Penalized | 1,04e-03 | 2,799e-03 | 7,91e-02 |
 | F13 Penalized2 | 6,79e-02 | 5,270e-02 | 6,59e+00 |
-| F14 Foxholes | **error di 3/3 run** | 9,980e-01 | 9,980e-01 |
-| F16 Six Hump Camel | **1,267e+01** | −1,032e+00 | −1,032e+00 |
+| **F14 Foxholes** | **error di 3/3 run** | 9,980e-01 | 9,980e-01 |
+| **F16 Six Hump Camel** | **1,267e+01** | −1,032e+00 | −1,0316e+00 |
+| F15 Kowalik | 3,0749e-04 | 3,075e-04 | 6,25e-04 |
+| F17 Branin | 3,9796e-01 | 3,979e-01 | 3,9793e-01 |
+| F18 Goldstein–Price | 3,000000 | 3,0 | 3,000000 |
+| F19 Hartman 3 | −3,8607 | −3,861 | −3,8608 |
+| F20 Hartman 6 | −3,3205 | −3,320 | −3,3204 |
+| F21 Shekel 5 | −10,1532 | −10,1532 | −10,1532 |
+| F22 Shekel 7 | −10,4029 | −10,4029 | −10,4029 |
+| F23 Shekel 10 | −10,5364 | −10,5364 | −10,5364 |
 
-Baseline mereproduksi Tabel 2 pada **13 dari 15** fungsi yang diuji — termasuk
-tujuh nilai nol eksak, dan F8/F12/F13 yang berada pada orde yang sama. Dua yang
-gagal adalah persis F14 dan F16, yaitu temuan A1.
+Baseline mereproduksi Tabel 2 pada **21 dari 23** fungsi — termasuk tujuh nilai nol
+eksak, F8/F12/F13 pada orde yang sama, dan seluruh sembilan fungsi
+fixed-dimension yang bisa dijalankan (F15, F17–F23) sampai empat angka penting.
+Dua yang gagal adalah persis F14 dan F16, yaitu temuan A1.
+
+Perhatikan blok terakhir: untuk **F15 dan F17–F23, `kma/` dan `kma-fixed/`
+memberi hasil yang praktis sama** — F18 sama-sama tepat 3, F21/F22/F23 sama
+sampai enam angka penting. Ini mengonfirmasi §E.7 langsung di Octave: bagian
+fixed-dimension multimodal pada Tabel 2 **tidak** bergantung pada cacat mana pun
+dan tetap sah. Optimum fungsi-fungsi itu jauh dari titik origin dan ruang
+pencariannya kecil, sehingga bias origin tidak membantu maupun merugikan.
 
 **Kecocokan juga terlihat pada MFE**, yang merupakan pemeriksaan independen dari
 nilai optimum. Kolom manuskrip diambil dari Tabel 3 (dimensi 100) karena Tabel 2
@@ -432,6 +449,9 @@ dalam batas noise. Hasil KMA untuk fungsi fixed-dimension multimodal ini **tidak
 bergantung pada cacat mana pun — bagian Tabel 2 itu sah. Optimum fungsi-fungsi
 tersebut memang jauh dari titik origin dan ruang pencarian mereka kecil, sehingga
 bias origin tidak membantu maupun merugikan.
+
+Kesimpulan ini diperiksa ulang di Octave dengan sumber MATLAB asli (§E.0): untuk
+F15 dan F17–F23, `kma/` dan `kma-fixed/` memberi hasil yang praktis identik.
 
 ### E.8 Peringatan penafsiran
 

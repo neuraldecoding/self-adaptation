@@ -1,5 +1,6 @@
 # Verifikasi GNU Octave 10.3.0 -- sumber MATLAB di kma/ dan kma-fixed/ dijalankan
-# tanpa modifikasi. F1-F13 pada dimensi 50, F14/F16 pada dimensi bawaannya.
+# tanpa modifikasi. Seluruh 23 fungsi benchmark: F1-F13 pada dimensi 50, F14-F23
+# pada dimensi bawaannya. 3 seed per sel, 138 run.
 # Dihasilkan oleh experiments/octave/sweep.sh. numeva = NumEva yang dilaporkan
 # masing-masing versi (kma/ = hitungan versi terbit, kma-fixed/ = evaluasi nyata).
 kma        status=ok fid=1 seed=1 opt=0 numeva=2190 gens=438 time=1.57
@@ -86,9 +87,57 @@ kma        status=error fid=14 seed=2 msg=value on right hand side of assignment
 kma-fixed  status=ok fid=14 seed=2 opt=0.9980038378 numeva=25064 gens=1071 time=7.73
 kma        status=error fid=14 seed=3 msg=value on right hand side of assignment is undefined
 kma-fixed  status=ok fid=14 seed=3 opt=0.9980038378 numeva=25099 gens=191 time=7.76
+kma        status=ok fid=15 seed=1 opt=0.0003074859878 numeva=25010 gens=250 time=5.68
+kma-fixed  status=ok fid=15 seed=1 opt=0.0003074859878 numeva=25086 gens=229 time=4.79
+kma        status=ok fid=15 seed=2 opt=0.0003074859878 numeva=25055 gens=231 time=5.77
+kma-fixed  status=ok fid=15 seed=2 opt=0.0003453084751 numeva=25065 gens=1108 time=4.62
+kma        status=ok fid=15 seed=3 opt=0.0003074859878 numeva=25125 gens=239 time=5.78
+kma-fixed  status=ok fid=15 seed=3 opt=0.001223173377 numeva=25365 gens=212 time=4.71
 kma        status=ok fid=16 seed=1 opt=12.67050581 numeva=25100 gens=197 time=8.91
 kma-fixed  status=ok fid=16 seed=1 opt=-1.031600044 numeva=8232 gens=1010 time=1.16
 kma        status=ok fid=16 seed=2 opt=12.67050581 numeva=25065 gens=197 time=8.88
 kma-fixed  status=ok fid=16 seed=2 opt=-1.031616465 numeva=2797 gens=109 time=0.43
 kma        status=ok fid=16 seed=3 opt=12.67050581 numeva=25100 gens=196 time=8.88
 kma-fixed  status=ok fid=16 seed=3 opt=-1.031620529 numeva=9306 gens=1013 time=1.31
+kma        status=ok fid=17 seed=1 opt=0.3979784932 numeva=1735 gens=107 time=0.35
+kma-fixed  status=ok fid=17 seed=1 opt=0.3979380051 numeva=2143 gens=106 time=0.33
+kma        status=ok fid=17 seed=2 opt=0.3979703755 numeva=1885 gens=108 time=0.38
+kma-fixed  status=ok fid=17 seed=2 opt=0.3979205801 numeva=1923 gens=105 time=0.29
+kma        status=ok fid=17 seed=3 opt=0.3979350982 numeva=6745 gens=1008 time=1.17
+kma-fixed  status=ok fid=17 seed=3 opt=0.3979237188 numeva=2487 gens=108 time=0.39
+kma        status=ok fid=18 seed=1 opt=3 numeva=7210 gens=133 time=1.48
+kma-fixed  status=ok fid=18 seed=1 opt=3 numeva=6855 gens=127 time=1.16
+kma        status=ok fid=18 seed=2 opt=3 numeva=6770 gens=134 time=1.41
+kma-fixed  status=ok fid=18 seed=2 opt=3 numeva=6629 gens=126 time=1.11
+kma        status=ok fid=18 seed=3 opt=3 numeva=6725 gens=133 time=1.40
+kma-fixed  status=ok fid=18 seed=3 opt=3 numeva=6538 gens=127 time=1.11
+kma        status=ok fid=19 seed=1 opt=-3.860362425 numeva=4340 gens=868 time=0.87
+kma-fixed  status=ok fid=19 seed=1 opt=-3.860498523 numeva=6954 gens=1004 time=1.24
+kma        status=ok fid=19 seed=2 opt=-3.860555344 numeva=1530 gens=106 time=0.39
+kma-fixed  status=ok fid=19 seed=2 opt=-3.86148878 numeva=4602 gens=822 time=0.83
+kma        status=ok fid=19 seed=3 opt=-3.861191538 numeva=1525 gens=106 time=0.38
+kma-fixed  status=ok fid=19 seed=3 opt=-3.860501843 numeva=1763 gens=105 time=0.33
+kma        status=ok fid=20 seed=1 opt=-3.320481988 numeva=4050 gens=119 time=1.16
+kma-fixed  status=ok fid=20 seed=1 opt=-3.320975345 numeva=3183 gens=111 time=0.72
+kma        status=ok fid=20 seed=2 opt=-3.320435908 numeva=3610 gens=117 time=1.04
+kma-fixed  status=ok fid=20 seed=2 opt=-3.320041554 numeva=4145 gens=115 time=0.94
+kma        status=ok fid=20 seed=3 opt=-3.320437883 numeva=3410 gens=116 time=1.00
+kma-fixed  status=ok fid=20 seed=3 opt=-3.320128645 numeva=12913 gens=147 time=3.00
+kma        status=ok fid=21 seed=1 opt=-10.15319968 numeva=25335 gens=231 time=6.32
+kma-fixed  status=ok fid=21 seed=1 opt=-10.15319968 numeva=25185 gens=203 time=5.13
+kma        status=ok fid=21 seed=2 opt=-10.15319968 numeva=25165 gens=219 time=5.99
+kma-fixed  status=ok fid=21 seed=2 opt=-10.15319968 numeva=25122 gens=1082 time=4.99
+kma        status=ok fid=21 seed=3 opt=-10.15319968 numeva=25150 gens=1100 time=5.95
+kma-fixed  status=ok fid=21 seed=3 opt=-10.15319968 numeva=25199 gens=1082 time=5.04
+kma        status=ok fid=22 seed=1 opt=-10.40290225 numeva=6595 gens=132 time=1.74
+kma-fixed  status=ok fid=22 seed=1 opt=-10.40291466 numeva=7004 gens=126 time=1.47
+kma        status=ok fid=22 seed=2 opt=-10.40292193 numeva=6480 gens=128 time=1.68
+kma-fixed  status=ok fid=22 seed=2 opt=-10.40290517 numeva=10201 gens=1019 time=2.08
+kma        status=ok fid=22 seed=3 opt=-10.40292783 numeva=12845 gens=1040 time=3.13
+kma-fixed  status=ok fid=22 seed=3 opt=-10.40290658 numeva=4623 gens=117 time=0.99
+kma        status=ok fid=23 seed=1 opt=-10.53640857 numeva=10955 gens=1029 time=2.84
+kma-fixed  status=ok fid=23 seed=1 opt=-10.53640135 numeva=6245 gens=121 time=1.38
+kma        status=ok fid=23 seed=2 opt=-10.53640492 numeva=7515 gens=134 time=2.11
+kma-fixed  status=ok fid=23 seed=2 opt=-10.5364073 numeva=11327 gens=1023 time=2.47
+kma        status=ok fid=23 seed=3 opt=-10.53640066 numeva=11635 gens=1033 time=3.05
+kma-fixed  status=ok fid=23 seed=3 opt=-10.53640008 numeva=5644 gens=120 time=1.28
