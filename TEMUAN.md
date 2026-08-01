@@ -237,8 +237,9 @@ tujuh konfigurasi.
 Bagian ini **tidak** memakai port Python. Berkas `.m` di `kma/` dan `kma-fixed/`
 dijalankan apa adanya di GNU Octave 10.3.0 lewat `experiments/octave/run_one.m`:
 **seluruh 23 fungsi benchmark** — F1–F13 pada dimensi 50, F14–F23 pada dimensi
-bawaannya — masing-masing 3 seed, 138 run. Hasil mentah:
-`experiments/results/octave_verification.txt`.
+bawaannya — masing-masing **30 run independen**, jumlah yang sama dengan Tabel 2.
+Total 1.380 run. Hasil mentah: `experiments/results/octave_verification.txt`,
+ringkasannya `experiments/results/octave_summary.md`.
 
 **Semantik bahasa yang menjadi dasar A1 dan A2, dibuktikan langsung:**
 
@@ -258,84 +259,91 @@ fixed    : rows= 80  all-zero rows= 0
 
 Angka 197 baris dan 69 baris nol **persis sama** dengan yang diprediksi port Python.
 
-**Hasil menjalankan algoritmanya** (rata-rata 3 seed; kolom manuskrip dari Tabel 2,
-dimensi 50):
+**Hasil menjalankan algoritmanya.** Avg (Std) dari **30 run independen** per sel —
+jumlah run yang sama dengan Tabel 2, sehingga langsung sebanding:
 
-| Func | `kma/` (baseline terbit) | manuskrip | `kma-fixed/` (A1–A4 diperbaiki) |
+| Func | `kma/` Avg (Std) | manuskrip Tabel 2 | `kma-fixed/` Avg (Std) |
 |---|---|---|---|
-| F1 Sphere | **0** | 0 | 6,44e+01 |
-| F2 Schwefel 2.22 | **0** | 0 | 5,11e+00 |
-| F3 Schwefel 1.2 | **0** | 0 | 3,05e+02 |
-| F4 Schwefel 2.21 | **0** | 0 | 1,87e+00 |
-| F5 Rosenbrock | 4,69e+01 | 4,831e+01 | 6,78e+04 |
-| F6 Step | **0** | 0 | 6,27e+01 |
-| F7 Quartic | 2,68e-04 | 1,715e-04 | 3,57e-03 |
-| F8 Schwefel | −1,699e+04 | −1,701e+04 | −1,495e+04 |
-| F9 Rastrigin | **0** | 0 | 6,46e+01 |
-| F10 Ackley | 4,44e-16 | 8,882e-16 | 2,02e+00 |
-| F11 Griewank | **0** | 0 | 1,51e+00 |
-| F12 Penalized | 1,04e-03 | 2,799e-03 | 7,91e-02 |
-| F13 Penalized2 | 6,79e-02 | 5,270e-02 | 6,59e+00 |
-| **F14 Foxholes** | **error di 3/3 run** | 9,980e-01 | 9,980e-01 |
-| **F16 Six Hump Camel** | **1,267e+01** | −1,032e+00 | −1,0316e+00 |
-| F15 Kowalik | 3,0749e-04 | 3,075e-04 | 6,25e-04 |
-| F17 Branin | 3,9796e-01 | 3,979e-01 | 3,9793e-01 |
-| F18 Goldstein–Price | 3,000000 | 3,0 | 3,000000 |
-| F19 Hartman 3 | −3,8607 | −3,861 | −3,8608 |
-| F20 Hartman 6 | −3,3205 | −3,320 | −3,3204 |
-| F21 Shekel 5 | −10,1532 | −10,1532 | −10,1532 |
-| F22 Shekel 7 | −10,4029 | −10,4029 | −10,4029 |
-| F23 Shekel 10 | −10,5364 | −10,5364 | −10,5364 |
+| F1 Sphere | **0 (0)** | 0 (0) | 5,822e+01 (4,61e+01) |
+| F2 Schwefel 2.22 | **0 (0)** | 0 (0) | 3,321e+00 (1,95e+00) |
+| F3 Schwefel 1.2 | **0 (0)** | 0 (0) | 6,813e+02 (9,75e+02) |
+| F4 Schwefel 2.21 | **0 (0)** | 0 (0) | 1,596e+00 (6,50e-01) |
+| F5 Rosenbrock | 4,735e+01 (4,65e-01) | 4,831e+01 (1,82e-01) | 1,033e+05 (9,93e+04) |
+| F6 Step | **0 (0)** | 0 (0) | 5,980e+01 (5,37e+01) |
+| F7 Quartic | 2,212e-04 (1,49e-04) | 1,715e-04 (1,19e-04) | 7,239e-03 (7,67e-03) |
+| F8 Schwefel | −1,641e+04 (2,16e+03) | −1,701e+04 (2,45e+03) | −1,491e+04 (1,34e+03) |
+| F9 Rastrigin | **0 (0)** | 0 (0) | 3,469e+01 (3,10e+01) |
+| F10 Ackley | 4,441e-16 (0) | 8,882e-16 (0) | 1,799e+00 (9,24e-01) |
+| F11 Griewank | **0 (0)** | 0 (0) | 1,520e+00 (5,31e-01) |
+| F12 Penalized | 2,105e-03 (2,80e-03) | 2,799e-03 (1,82e-03) | 1,091e-01 (2,30e-01) |
+| F13 Penalized2 | 1,113e-01 (1,72e-01) | 5,270e-02 (4,69e-02) | 2,894e+00 (4,03e+00) |
+| **F14 Foxholes** | **error di 30/30 run** | 9,980e-01 (4,38e-16) | 9,980e-01 (0) |
+| **F16 Six Hump Camel** | **1,2671e+01 (0)** | −1,032e+00 (9,78e-06) | −1,0316e+00 (8,68e-06) |
+| F15 Kowalik | 3,0749e-04 (3,3e-11) | 3,075e-04 (5,88e-15) | 1,126e-03 (3,59e-03) |
+| F17 Branin | 3,9794e-01 (3,64e-05) | 3,979e-01 (3,51e-05) | 3,9795e-01 (2,81e-05) |
+| F18 Goldstein–Price | 3,000000 (0) | 3,000 (4,10e-10) | 3,000000 (0) |
+| F19 Hartman 3 | −3,8610 (6,30e-04) | −3,861 (8,20e-04) | −3,8609 (6,84e-04) |
+| F20 Hartman 6 | −3,3127 (2,93e-02) | −3,320 (3,17e-04) | −3,3126 (2,93e-02) |
+| F21 Shekel 5 | −10,1532 (0) | −10,1532 (6,45e-15) | −10,1532 (0) |
+| F22 Shekel 7 | −10,4029 (1,18e-05) | −10,4029 (1,01e-05) | −10,4029 (1,02e-05) |
+| F23 Shekel 10 | −10,5364 (1,95e-06) | −10,5364 (2,54e-06) | −10,5364 (2,53e-06) |
 
-Baseline mereproduksi Tabel 2 pada **21 dari 23** fungsi — termasuk tujuh nilai nol
-eksak, F8/F12/F13 pada orde yang sama, dan seluruh sembilan fungsi
-fixed-dimension yang bisa dijalankan (F15, F17–F23) sampai empat angka penting.
-Dua yang gagal adalah persis F14 dan F16, yaitu temuan A1.
+Baseline mereproduksi Tabel 2 pada **21 dari 23** fungsi, Avg maupun Std. Tujuh
+nilai nol eksak dengan Std nol; F17, F22, dan F23 cocok bahkan pada Std-nya. Dua
+yang gagal adalah persis F14 dan F16, yaitu temuan A1. Satu penyimpangan kecil:
+F20 memberi Std 2,93e-02 (28 dari 30 run mencapai optimum) sementara Tabel 2
+melaporkan 3,17e-04.
 
-Perhatikan blok terakhir: untuk **F15 dan F17–F23, `kma/` dan `kma-fixed/`
-memberi hasil yang praktis sama** — F18 sama-sama tepat 3, F21/F22/F23 sama
-sampai enam angka penting. Ini mengonfirmasi §E.7 langsung di Octave: bagian
-fixed-dimension multimodal pada Tabel 2 **tidak** bergantung pada cacat mana pun
-dan tetap sah. Optimum fungsi-fungsi itu jauh dari titik origin dan ruang
-pencariannya kecil, sehingga bias origin tidak membantu maupun merugikan.
+**Guaranty terukur langsung di Octave**, memakai ambang milik kode itu sendiri:
 
-**Kecocokan juga terlihat pada MFE**, yang merupakan pemeriksaan independen dari
-nilai optimum. Kolom manuskrip diambil dari Tabel 3 (dimensi 100) karena Tabel 2
-tidak melaporkan MFE; menurut Tabel 3–5 sendiri, MFE KMA nyaris tidak berubah
-terhadap dimensi, sehingga perbandingan ini tetap bermakna:
-
-| Func | Octave, `kma/`, dim 50 | Manuskrip (Tabel 3, dim 100) |
+| | `kma/` | `kma-fixed/` |
 |---|---|---|
-| F6 Step | **55,0** | 55,83 |
-| F11 Griewank | **170,0** | 169,83 |
-| F9 Rastrigin | **143,3** | 150,5 (dan 145,33 di §3.3, dim 50) |
-| F1 Sphere | 2.203 | 2.087 |
-| F3 Schwefel 1.2 | 2.403 | 2.464 |
-| F2 Schwefel 2.22 | 4.165 | 3.923 |
-| F4 Schwefel 2.21 | 4.338 | 4.144 |
-| F5, F7, F8, F10, F12, F13 | 25.000–25.067 | 25.009–25.150 |
+| F1–F13 (berdimensi tinggi) | **7/13 = 53,85%** | **0/13 = 0%** |
+| Fungsi yang berhasil 100% | F1, F2, F3, F4, F6, F9, F11 | — |
 
-Untuk F6, F9, dan F11, kecocokan MFE mencapai orde satuan — dari angka yang
-besarnya hanya puluhan sampai ratusan. Ini praktis menutup kemungkinan kebetulan:
-kode di `kma/` memang kode yang menghasilkan Tabel 2–5, yang membuat pengecualian
-F14 dan F16 semakin tegas.
+Angka **53,85%** persis sama dengan yang diklaim §3.4 dan Tabel 3–5 manuskrip,
+dan menjadi **0%** setelah A2+A3 diperbaiki. Ini mengulang temuan §E.2 — yang
+sebelumnya hanya bersandar pada port Python — dengan sumber MATLAB asli.
+
+**Kecocokan MFE**, pemeriksaan independen dari nilai optimum. Kolom manuskrip dari
+Tabel 3 (dimensi 100) karena Tabel 2 tidak melaporkan MFE; menurut Tabel 3–5
+sendiri MFE KMA nyaris tidak berubah terhadap dimensi:
+
+| Func | `kma/` dim 50, median (mean) | Manuskrip |
+|---|---|---|
+| F6 Step | **55,0** (55,7) | 55,83 |
+| F9 Rastrigin | **150,0** (1.066) | 150,5 — dan 145,33 di §3.3 |
+| F11 Griewank | **175,0** (183,5) | 169,83 |
+| F1 Sphere | 2.185 (2.183) | 2.087 |
+| F3 Schwefel 1.2 | 2.475 (2.475) | 2.464 |
+| F2 Schwefel 2.22 | 4.155 (4.152) | 3.923 |
+| F4 Schwefel 2.21 | 4.358 (4.356) | 4.144 |
+
+Untuk F6, F9, dan F11 kecocokan mencapai orde satuan pada angka yang besarnya
+hanya puluhan sampai ratusan. Ini praktis menutup kemungkinan kebetulan: kode di
+`kma/` memang kode yang menghasilkan Tabel 2–5, yang membuat pengecualian F14 dan
+F16 semakin tegas. Untuk F9 median dipakai karena 28 dari 30 run selesai dalam
+135–165 evaluasi sementara dua sisanya jatuh ke tahap dua dan memakai belasan
+ribu, sehingga mean-nya (1.066) menyesatkan.
+
+**Pola hasilnya konsisten dengan penjelasan bias origin:**
+
+- Tujuh fungsi yang optimumnya **di** titik origin (F1–F4, F6, F9, F11): baseline
+  memberi 0 eksak, `kma-fixed/` gagal total di seluruh 30 run.
+- F8, satu-satunya fungsi multimodal berdimensi tinggi yang optimumnya **jauh**
+  dari origin, di `(420,9687; …)`: selisihnya hanya ~10% (−1,641e4 vs −1,491e4).
+- F15 dan F17–F23: `kma/` dan `kma-fixed/` **praktis identik** — F18 dan F21
+  sama-sama eksak, F22 dan F23 sama sampai enam angka penting. Ini mengonfirmasi
+  §E.7: bagian fixed-dimension multimodal pada Tabel 2 tidak bergantung pada cacat
+  mana pun dan tetap sah. Optimum fungsi-fungsi itu jauh dari origin dan ruang
+  pencariannya kecil, sehingga bias origin tidak membantu maupun merugikan.
 
 `kma-fixed/` memperbaiki A2, A3, dan A4 sekaligus, jadi tabel di atas tidak
 memisahkan kontribusi masing-masing. Pemisahan itu ada di §E.2 (port Python),
 yang menunjukkan bahwa A4 sendirian tidak mengubah guaranty sama sekali dan yang
 menentukan adalah A2+A3.
 
-Perhatikan juga polanya: pada tujuh fungsi yang optimumnya di titik origin
-(F1–F4, F6, F9, F11) baseline memberi **0 eksak** dan `kma-fixed/` gagal total.
-Pada F8 — satu-satunya fungsi multimodal berdimensi tinggi yang optimumnya jauh
-dari origin, di `(420,9687; …)` — selisihnya hanya ~12% (−1,699e4 vs −1,495e4).
-Ini persis yang diharapkan jika keunggulan baseline berasal dari bias menuju
-origin, bukan dari kemampuan pencarian.
-
-`kma-fixed/` memperbaiki A2, A3, dan A4 sekaligus, jadi tabel di atas tidak
-memisahkan kontribusi masing-masing. Pemisahan itu ada di §E.2 (port Python),
-yang menunjukkan bahwa A4 sendirian tidak mengubah guaranty sama sekali dan yang
-menentukan adalah A2+A3.
+Ringkasan yang dihasilkan otomatis: `experiments/results/octave_summary.md`.
 
 ### E.1 Port ini memang mereproduksi perilaku kode terbit
 
@@ -500,9 +508,9 @@ waktu, karena nama fungsinya sama.
   Aliran bilangan acaknya berbeda, jadi nilai per-run tidak akan identik; yang
   dibandingkan adalah perilaku agregat antar konfigurasi yang berbagi port yang
   sama. §E.0 memakai sumber MATLAB asli dan berfungsi sebagai pemeriksaan silang.
-- Sweep Octave di §E.0 hanya 3 seed per sel (bukan 30) karena satu run 50-dimensi
-  memakan ~16 detik. Cukup untuk memastikan arah dan besaran efeknya, tidak cukup
-  untuk statistik seperti Tabel 2.
+- Sweep Octave di §E.0 memakai 30 run per sel, sama dengan Tabel 2, tetapi hanya
+  pada dimensi 50. Analisis skalabilitas Tabel 3–5 (100/500/1000 dimensi) tidak
+  direplikasi di Octave.
 - Eksperimen dijalankan pada dimensi 50 saja (F1–F13). Analisis skalabilitas
   Tabel 3–5 (100/500/1000 dimensi) tidak direplikasi, kecuali perbandingan
   `f_Rosenbrock(0)` pada A3 yang dihitung analitik.

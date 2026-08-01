@@ -31,14 +31,17 @@ Menghapusnya cukup dengan `rm -rf ~/.local/micromamba`.
 | Berkas | Kegunaan |
 |---|---|
 | `run_one.m` | Menjalankan satu konfigurasi secara headless: `octave-cli run_one.m <codedir> <FunctionID> <Dimension> <seed>`. Memakai `KMA2D` (bukan `KMA3D`, yang membuka figure). |
-| `sweep.sh` | Sweep pembanding `kma/` vs `kma-fixed/` untuk seluruh 23 fungsi, seed 1–3 — 138 run, ~35 menit. F1–F13 dijalankan pada dimensi 50; untuk F14–F23 argumen dimensi diabaikan karena `GetFunction` menimpanya. Tanpa argumen menjalankan semuanya; `./sweep.sh 2 3 4` hanya menjalankan fungsi yang disebut. Keluaran ke stdout, alihkan ke `../results/octave_verification.txt`. |
+| `sweep.sh` | Sweep pembanding `kma/` vs `kma-fixed/` untuk seluruh 23 fungsi. F1–F13 dijalankan pada dimensi 50; untuk F14–F23 argumen dimensi diabaikan karena `GetFunction` menimpanya. Jumlah seed dan worker diatur lewat env: `SEEDS=30 JOBS=10 ./sweep.sh` menghasilkan 1.380 run dalam ~35 menit. Tanpa argumen menjalankan semua fungsi; `./sweep.sh 2 3 4` hanya yang disebut. Tiap run menulis berkas sendiri di direktori scratch sebelum digabung, sehingga worker paralel tidak saling menimpa baris. |
+| `summarize.py` | Meringkas hasil sweep menjadi tabel Avg (Std), MFE, dan Guaranty bergaya Tabel 2: `python3 summarize.py ../results/octave_verification.txt`. |
 | `allhq_index_demo.m` | Memutar ulang pengindeksan baris `AllHQ` tahap dua (temuan A2) dengan ukuran sebenarnya, memakai semantik array Octave/MATLAB. |
 | `random.m` | **Shim khusus Octave.** `kma/levy.m` memanggil `random('Normal',…)` dari Statistics and Machine Learning Toolbox milik MATLAB; di Octave fungsi itu hanya ada lewat paket `statistics`. Shim ini mengimplementasikan persis satu bentuk panggilan yang dibutuhkan `levy.m`, yaitu `mu + sigma.*randn(n,m)`. **Jangan pernah menaruhnya di path MATLAB.** |
 
 ## Menjalankan
 
 ```bash
-./sweep.sh > ../results/octave_verification.txt
+SEEDS=30 JOBS=10 ./sweep.sh > ../results/octave_verification.txt
+python3 summarize.py ../results/octave_verification.txt > ../results/octave_summary.md
+
 export MAMBA_ROOT_PREFIX=~/.local/micromamba
 ~/.local/micromamba/bin/micromamba run -n oct octave-cli allhq_index_demo.m
 ```
