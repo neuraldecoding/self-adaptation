@@ -17,7 +17,7 @@
 % PATCHED COPY -- not the upstream release. The pristine v1.0.0 sources are kept
 % in ../kma/ as the baseline. This copy applies the minimal fixes A1-A4 that are
 % documented in ../TEMUAN.md; every change is marked with a "FIX Ax" comment.
-% Deviations B1-B12 in TEMUAN.md are deliberately NOT changed here.
+% Deviations B1-B14 in TEMUAN.md are deliberately NOT changed here.
 %=================================================================================
 
 function [BestIndiv,OptVal,NumEva,fopt,fmean,ProcTime,EvoPopSize] = KMA2D

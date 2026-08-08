@@ -18,7 +18,7 @@ Setiap perubahan diberi tanda komentar `FIX Ax` di dalam kode. Diff lengkap ada 
 
 ## Yang sengaja TIDAK diubah
 
-Penyimpangan B1–B12 di `../TEMUAN.md` (inisialisasi di sudut, struktur micro-swarm
+Penyimpangan B1–B14 di `../TEMUAN.md` (inisialisasi di sudut, struktur micro-swarm
 tahap dua, `MutRadius = 0.5`, ambang improve/stagnasi `> 2`, `MutRadius` ganda di
 `Reposition`, dsb.) **dibiarkan apa adanya**. Tujuan folder ini adalah mengisolasi
 efek A1–A4, bukan menulis ulang algoritmanya.

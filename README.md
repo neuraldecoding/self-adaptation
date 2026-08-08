@@ -39,13 +39,63 @@ satu saja tidak menghilangkan bias origin — jalur yang lain masih terbuka.
 
 ### Penyimpangan dan kesalahan lain
 
-- **B1–B12** — kode tidak melakukan apa yang ditulis paper. Terbesar: inisialisasi
-  populasi di **4 sudut** ruang pencarian (paper menulis "created randomly"), dan
-  struktur **40 micro-swarm** pada tahap dua yang sama sekali tidak dideskripsikan.
+- **B1–B14** — kode tidak melakukan apa yang ditulis paper. Terbesar: inisialisasi
+  populasi di **4 sudut** ruang pencarian (paper menulis "created randomly"),
+  struktur **40 micro-swarm** pada tahap dua yang sama sekali tidak dideskripsikan,
+  dan cabang "tambah individu" Eq. (10) yang **tidak terjangkau** lalu diam-diam
+  digantikan operator lain (B13, lihat bagian self-adaptation di bawah).
 - **C1–C7** — kesalahan di dalam manuskrip. Termasuk Eq. (1) `q = ⌊(p−1)n⌋` yang
   bernilai negatif, Eq. (2) yang lupa mengurangi satu female, dan §2.8 (`α = 0.1`)
   yang bertentangan dengan §4 ("mutation radius of 0.5").
 - **D1–D4** — masalah minor.
+
+---
+
+## Mekanisme self-adaptation
+
+Objek studi repositori ini. Penjelasan lengkap ada di
+[TEMUAN.md](TEMUAN.md#mekanisme-self-adaptation-apa-untuk-apa-dan-di-mana).
+
+**Apa.** Parameter kendali metaheuristik (ukuran populasi, laju mutasi, ukuran
+langkah) biasanya dipatok pengguna sebelum run. Nilai terbaiknya bergantung pada
+masalah yang belum diketahui karakteristiknya, dan berubah selama run — awalnya
+butuh eksplorasi, akhirnya butuh eksploitasi. Self-adaptation membuat algoritma
+menyetel parameternya sendiri secara online dari umpan balik pencarian.
+
+**Untuk apa di KMA.** KMA hanya mengadaptasi **ukuran populasi `n`** (§2.10
+menganggapnya jauh lebih sensitif daripada porsi big male `p` dan mlipir rate `d`,
+yang dipatok 0,5). `n` besar → banyak kandidat tersebar → eksplorasi tinggi tetapi
+boros evaluasi. `n` kecil → konvergensi cepat, hemat evaluasi, tetapi rawan
+terjebak. Jadi tujuannya dua: **menyeimbangkan eksplorasi–eksploitasi otomatis**
+dan **menghemat evaluasi**. Aturannya (Eq. 10): dua generasi membaik berturut →
+`n − 5`; dua generasi stagnan → `n + 5` dengan individu baru dari big male terbaik.
+Rentang 20–200.
+
+**Di mana.** Manuskrip bertentangan dengan dirinya sendiri: Algoritma 1
+menempatkannya **menyatu** di loop utama tiap generasi, sedangkan §2.4 dan §3.1
+mengatakan hanya ada di fase 2. Kode mengikuti §2.4/§3.1 — jadi **blok terpisah**,
+dan terpisah dalam tiga hal: tidak ada sama sekali di tahap 1 (1.000 generasi pada
+`n = 5` tetap), berada di level loop berbeda dari ketiga gerakan (loop luar vs loop
+dalam per micro-swarm), dan tidak menyentuh satu pun variabel gerakan sehingga bisa
+diangkat keluar utuh.
+
+**Yang terjadi sebenarnya.** Probe atas 33 run (`experiments/octave/selfadapt_probe.m`,
+membaca `EvoPopSize` tanpa memodifikasi kode):
+
+| | |
+|---|---|
+| Tahap 2 selalu dimulai pada `n = 200 = n_max` | 33/33 run |
+| Populasi tidak pernah berubah sepanjang tahap 2 | 8/33 run |
+| Langkah turun vs naik | **409 vs 57** |
+| Generasi tahap 2 yang dihabiskan pada `n = 200` | 33% |
+
+Karena tahap 2 mulai tepat di batas atas, cabang `n + a` tidak terjangkau sampai
+populasi menyusut. Saat stagnasi di `n = n_max`, kode menjalankan `Reposition` atas
+seluruh populasi — operator **greedy** yang tidak ada di manuskrip dan tidak bisa
+memulihkan keragaman seperti penambahan individu baru. Mekanisme yang dimaksudkan
+sebagai penyeimbang dua arah berperilaku sebagai **ratchet penyusut satu arah**.
+Untuk F10, 20% anggaran evaluasi habis di operator itu sementara ukuran populasi
+tidak pernah berubah sama sekali.
 
 ---
 
@@ -121,7 +171,7 @@ Gambaran akhirnya terpisah rapi menjadi tiga kelompok:
 manuscript/     komodomelipiralgorithm.pdf — paper Applied Soft Computing 114 (2022) 108043
 kma/            KMA v1.0.0 asli, TIDAK DISENTUH. Baseline untuk semua perbandingan.
 kma-fixed/      Salinan dengan perbaikan minimal A1-A4 saja. Tiap perubahan ditandai
-                komentar "FIX Ax". Diff lengkap di A1-A4.patch. Penyimpangan B1-B12
+                komentar "FIX Ax". Diff lengkap di A1-A4.patch. Penyimpangan B1-B14
                 sengaja dibiarkan agar efek A1-A4 terisolasi.
 experiments/
   octave/       Menjalankan sumber MATLAB apa adanya di GNU Octave.
@@ -129,6 +179,7 @@ experiments/
                 sweep.sh            sweep kma/ vs kma-fixed/, paralel
                 summarize.py        ringkasan bergaya Tabel 2
                 allhq_index_demo.m  replay pengindeksan AllHQ (temuan A2)
+                selfadapt_probe.m   jejak ukuran populasi lewat EvoPopSize
                 random.m            shim Octave untuk random('Normal',...)
   kma_py/       Port Python yang setia dari KMA2D.m dengan A1-A4 bisa di-toggle,
                 plus 23 fungsi benchmark yang sudah diverifikasi terhadap Tabel 6.
@@ -136,7 +187,8 @@ experiments/
                 octave_summary.md        ringkasan Avg (Std), MFE, Guaranty
                 raw.csv                  4.830 run Python (23 fungsi x 7 konfigurasi x 30 seed)
                 summary.md               ringkasan per konfigurasi
-TEMUAN.md       Laporan audit lengkap: A1-A4, B1-B12, C1-C7, D1-D4, hasil, batasan.
+TEMUAN.md       Laporan audit lengkap: mekanisme self-adaptation, A1-A4, B1-B14,
+                C1-C7, D1-D4, hasil eksperimen, batasan.
 ```
 
 ### Kenapa dua jalur eksperimen
@@ -219,7 +271,7 @@ Yang belum:
   baseline memberi Std 2,93e-02 (28 dari 30 run mencapai optimum) sementara
   Tabel 2 melaporkan 3,17e-04.
 - `kma-fixed/` **bukan** "algoritma paper yang dikerjakan dengan benar". Itu kode
-  terbit dengan empat cacat dihapus; seluruh penyimpangan B1–B12 masih ada di
+  terbit dengan empat cacat dihapus; seluruh penyimpangan B1–B14 masih ada di
   dalamnya — terutama B1, inisialisasi di sudut — dan sebagian selisih yang
   terlihat berasal dari sana.
 

@@ -41,7 +41,7 @@
    -32 -32 -32 -32 -32 -16 -16 -16 -16 -16 0 0 0 0 0 16 16 16 16 16 32 32 32 32 32];
      for j=1:25
 --- kma/KMA2D.m	2026-08-01 09:14:08.365865097 +0700
-+++ kma-fixed/KMA2D.m	2026-08-01 09:32:56.448211184 +0700
++++ kma-fixed/KMA2D.m	2026-08-08 10:31:35.035320528 +0700
 @@ -14,12 +14,18 @@
  % Email: suyanto@telkomuniversity.ac.id 
  % Website: https://suyanto.staff.telkomuniversity.ac.id
@@ -49,7 +49,7 @@
 +% PATCHED COPY -- not the upstream release. The pristine v1.0.0 sources are kept
 +% in ../kma/ as the baseline. This copy applies the minimal fixes A1-A4 that are
 +% documented in ../TEMUAN.md; every change is marked with a "FIX Ax" comment.
-+% Deviations B1-B12 in TEMUAN.md are deliberately NOT changed here.
++% Deviations B1-B14 in TEMUAN.md are deliberately NOT changed here.
 +%=================================================================================
  
  function [BestIndiv,OptVal,NumEva,fopt,fmean,ProcTime,EvoPopSize] = KMA2D
@@ -175,7 +175,7 @@
          if FolHQ >= MaxFolHQ
              break
 --- kma/KMA3D.m	2026-08-01 09:14:08.366027582 +0700
-+++ kma-fixed/KMA3D.m	2026-08-01 09:32:59.726009241 +0700
++++ kma-fixed/KMA3D.m	2026-08-08 10:31:35.035438933 +0700
 @@ -14,12 +14,18 @@
  % Email: suyanto@telkomuniversity.ac.id 
  % Website: https://suyanto.staff.telkomuniversity.ac.id
@@ -183,7 +183,7 @@
 +% PATCHED COPY -- not the upstream release. The pristine v1.0.0 sources are kept
 +% in ../kma/ as the baseline. This copy applies the minimal fixes A1-A4 that are
 +% documented in ../TEMUAN.md; every change is marked with a "FIX Ax" comment.
-+% Deviations B1-B12 in TEMUAN.md are deliberately NOT changed here.
++% Deviations B1-B14 in TEMUAN.md are deliberately NOT changed here.
 +%=================================================================================
  
  function [BestIndiv,OptVal,NumEva,fopt,fmean,ProcTime,EvoPopSize] = KMA3D

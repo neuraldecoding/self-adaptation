@@ -8,8 +8,11 @@ Dokumen ini mencatat hasil pemeriksaan kesesuaian antara:
 
 Keduanya memang berpasangan (kode ini adalah kode pendamping resmi paper tersebut),
 tetapi **tidak sepenuhnya sesuai**. Ditemukan 4 cacat perangkat lunak (A1–A4),
-12 penyimpangan kode terhadap deskripsi/rumus di manuskrip (B1–B12), 7 kesalahan
+14 penyimpangan kode terhadap deskripsi/rumus di manuskrip (B1–B14), 7 kesalahan
 di dalam manuskrip sendiri (C1–C7), dan beberapa masalah minor (D1–D4).
+
+Mekanisme self-adaptation — objek studi repositori ini — dijelaskan lebih dulu di
+bagian berikutnya, karena cacat A2 berada persis di dalamnya.
 
 ## Cara verifikasi
 
@@ -28,6 +31,168 @@ Tiga lapis, saling menguatkan:
 
 Perbaikan minimal untuk A1–A4 ada di `kma-fixed/` (kode asli di `kma/` sengaja
 dibiarkan utuh sebagai baseline).
+
+---
+
+## Mekanisme self-adaptation: apa, untuk apa, dan di mana
+
+Bagian ini menjelaskan objek studi repositori ini sebelum masuk ke daftar temuan,
+karena cacat A2 justru berada di dalam mekanisme ini.
+
+### Apa itu self-adaptation
+
+Setiap metaheuristik punya **parameter kendali** — ukuran populasi, laju mutasi,
+laju crossover, ukuran langkah — yang biasanya ditetapkan pengguna sebelum run.
+Masalahnya dua: nilai optimalnya bergantung pada masalah yang sedang dipecahkan
+(yang karakteristiknya belum diketahui), dan nilai terbaiknya **berubah selama
+run** — di awal butuh eksplorasi luas, di akhir butuh eksploitasi ketat.
+
+Self-adaptation adalah jawaban untuk itu: algoritma menyetel parameternya sendiri
+secara online berdasarkan umpan balik dari pencarian yang sedang berjalan, tanpa
+campur tangan pengguna.
+
+> **Catatan istilah.** Menurut taksonomi baku Eiben, Hinterding & Michalewicz
+> (1999), skema KMA sebenarnya tergolong **adaptive** (parameter dikemudikan oleh
+> umpan balik dari pencarian), bukan **self-adaptive** dalam arti ketat (parameter
+> dikodekan di dalam individu dan ikut berevolusi lewat seleksi). Manuskrip
+> memakai istilah "self-adaptation"; dokumen ini mengikuti istilah manuskrip.
+
+### Gunanya di KMA
+
+Parameter yang disetel KMA hanya satu: **ukuran populasi `n`**. Alasannya
+dinyatakan di §2.10 — `n` dianggap jauh lebih sensitif daripada porsi big male
+`p` dan mlipir rate `d`, sehingga `p` dan `d` dipatok 0,5 dan hanya `n` yang
+diadaptasi.
+
+`n` dipilih karena ia yang mengendalikan **keseimbangan eksplorasi–eksploitasi**:
+
+- **`n` besar** → banyak kandidat solusi tersebar di ruang pencarian → eksplorasi
+  tinggi, bagus untuk keluar dari optimum lokal, tetapi boros: tiap generasi
+  menghabiskan `n` evaluasi.
+- **`n` kecil** → sedikit individu, konvergensi cepat di sekitar solusi terbaik →
+  eksploitasi tinggi dan hemat evaluasi, tetapi rawan terjebak.
+
+Jadi tujuan mekanisme ini ada dua: **menyeimbangkan eksplorasi–eksploitasi secara
+otomatis** tanpa pengguna perlu menebak `n`, dan **menghemat evaluasi** dengan
+mengecilkan populasi ketika pencarian sudah berada di jalur yang produktif.
+Manuskrip menempatkannya sebagai keunggulan ketiga KMA (§4) dan mengklaim inilah
+yang membuat tahap dua "guarantee global optima for all (100%) fixed
+low-dimensional benchmarks".
+
+### Aturan kendalinya
+
+Eq. (10) memakai umpan balik berupa perbaikan fitness terbaik-sejauh-ini:
+
+| Sinyal | Tafsiran | Tindakan | Maksud |
+|---|---|---|---|
+| dua generasi berturut **membaik** | pencarian sedang produktif | `n − 5` | perketat eksploitasi, hemat evaluasi |
+| dua generasi berturut **stagnan** | terjebak lokal / area datar | `n + 5`, individu baru dibuat dari big male terbaik yang digeser acak | suntikkan keragaman untuk kabur |
+
+Batasnya: `n` awal 200, minimum 20, maksimum 200 (§2.10 dan Tabel 1).
+
+### Di mana posisinya: menyatu atau blok terpisah?
+
+**Manuskrip bertentangan dengan dirinya sendiri.** Algoritma 1 — satu-satunya
+spesifikasi formal — menempatkannya **menyatu**, sebagai langkah ke-6 dari 7 di
+dalam satu loop utama, sejajar dengan ketiga gerakan dan dijalankan tiap generasi:
+
+```
+while StoppingCriterion = false do
+    for each Komodo, calculate its quality, and then rank them;
+    ... split into big males, female, small males (Eqs. 1-2) ...
+    for each big male, move it using Eq. (4) ...
+    Update the female by either mating ... or parthenogenesis ...
+    for each small male, move it using Eq. (9) ...
+    Update the population size n using Eq. (10);          <-- di sini
+    Select the highest-quality Komodo ... as kbest
+end
+```
+
+Sebaliknya §2.4 dan §3.1 menyatakan fase 1 memakai populasi tetap 5 individu dan
+self-adaptation hanya ada di fase 2. **Kode mengikuti §2.4/§3.1, bukan Algoritma 1.**
+
+Peta kode `kma/KMA2D.m`:
+
+```
+ 68  while Gen < MaxGenExam2              TAHAP 1
+ 79    MoveBigMalesFemaleFirstStage
+ 80    MoveSmallMalesFirstStage
+ 93    EvoPopSize = [EvoPopSize PopSize]     n tetap 5, tidak ada adaptasi apa pun
+112  end
+
+145  while NumEva < MaxNumEva              TAHAP 2, loop luar
+149    for ind=1:SwarmSize:AdaPopSize        loop dalam, 40 micro-swarm
+171      MoveBigMalesFemaleSecondStage         ketiga gerakan ada DI SINI
+172      MoveSmallMalesSecondStage
+188    end
+207    % Self-adaptation of population size   BLOK SELF-ADAPTATION (207-256)
+209      counter improve / stagnan
+219      cabang menyusut : sort lalu potong
+232      cabang membesar : AddingPop / Reposition
+262    EvoPopSize = [EvoPopSize AdaPopSize]
+264  end
+```
+
+Jadi **blok terpisah**, dan terpisah dalam tiga hal sekaligus:
+
+1. **Terpisah menurut tahap.** Sama sekali tidak ada di tahap 1 — 1.000 generasi
+   berjalan pada `n = 5` tetap. Variabel `IncAdaPopSize`, `DecAdaPopSize`,
+   `MaxGenImprove`, `MaxGenStagnan`, dan `GenStagnan` baru lahir di baris 124–132,
+   setelah tahap 1 selesai.
+2. **Terpisah menurut level loop.** Ketiga gerakan berjalan di loop dalam per
+   micro-swarm (149–188); self-adaptation di loop luar (207–256). Beda tingkat
+   nesting, dan ini bahkan tidak bisa dipetakan ke Algoritma 1 karena micro-swarm
+   tidak ada di manuskrip.
+3. **Terpisah menurut data.** Blok itu hanya membaca dan menulis `Pop`, `FX`,
+   `OneElitFX`, serta counter-nya sendiri. Tidak menyentuh `BigMales`, `Female`,
+   `SmallMales`, `AllHQ`, maupun `MlipirRate`. Bisa diangkat keluar tanpa
+   menyentuh operator gerakan sama sekali.
+
+Ada ironi kecil: ketiga gerakan difaktorkan menjadi subfungsi bernama
+(`MoveBigMalesFemaleSecondStage` dan seterusnya), sementara self-adaptation —
+yang di manuskrip punya bagian sendiri sebagai kontribusi — ditulis **inline tanpa
+nama**. Secara tekstual ia menyatu di badan `KMA2D`, secara struktural terpisah.
+
+Catatan: `GenImprove` di tahap 1 (baris 66, 96–97) **bukan** bagian dari mekanisme
+ini. Itu memberi makan `ImproveRate` untuk mendeteksi kompleksitas fungsi —
+mekanisme adaptif yang berbeda dan tujuannya lain.
+
+### Validasi empiris
+
+`experiments/octave/selfadapt_probe.m` membaca `EvoPopSize`, keluaran resmi
+`KMA2D`, tanpa memodifikasi kode. 33 run pada fungsi yang benar-benar mencapai
+tahap dua (F5, F7, F8, F10, F12, F13, F15, F16, F20, F21, F22 — 3 seed):
+
+| Pengamatan | Hasil |
+|---|---|
+| Tahap 1 berjalan pada `n = 5` tetap | 33/33 run |
+| Tahap 2 dimulai pada `n = 200` | 33/33 run |
+| Populasi **tidak pernah berubah** sepanjang tahap 2 | 8/33 run (F7, F10, F16) |
+| Hanya menyusut, tidak pernah membesar | 10/33 run |
+| Total langkah turun vs naik | **409 vs 57** |
+| Generasi tahap 2 yang dihabiskan pada `n = 200` | 1.193 dari 3.625 (33%) |
+
+### Konsekuensi: mekanismenya tidak simetris
+
+Angka 409 turun berbanding 57 naik bukan kebetulan — lihat **B13**. Tahap dua
+dimulai tepat pada `n = 200 = MaxAdaPopSize`, sehingga cabang `n + a` Eq. (10)
+**tidak terjangkau** sampai populasi sempat menyusut. Ketika stagnasi terjadi pada
+`n = n_max`, kode tidak menambah individu melainkan menjalankan `Reposition` atas
+seluruh populasi — operator yang tidak ada di manuskrip, dan yang bersifat
+**greedy** (perubahan hanya diterima bila lebih baik), sehingga tidak dapat
+memulihkan keragaman sebagaimana penambahan individu baru.
+
+Akibatnya, mekanisme yang dimaksudkan sebagai **penyeimbang dua arah** berperilaku
+sebagai **ratchet penyusut satu arah**, dengan separuh perannya — penyuntikan
+keragaman saat stagnasi — digantikan operator intensifikasi yang tak
+terdokumentasi.
+
+Biayanya nyata. Untuk F10 seluruh 75 generasi tahap dua berjalan pada `n = 200`
+tanpa satu pun perubahan ukuran, tetapi stagnasi memicu `Reposition` setiap tiga
+generasi — sekitar 25 kali × 200 evaluasi = **5.000 dari 25.000 evaluasi yang
+dihitung kode (20%)** habis untuk operator yang tidak dideskripsikan, sementara
+"self-adaptation of population size" yang diklaim tidak mengubah ukuran populasi
+sama sekali.
 
 ---
 
@@ -182,6 +347,8 @@ Bukan bug, tetapi kode tidak melakukan apa yang ditulis paper.
 | B10 | §2.7: q = 2 untuk unimodal, **q = 3** lebih baik untuk multimodal | `NumBM = floor(PopSize/2) = 2` selalu, di kedua tahap. Hipotesis q = 3 tidak pernah diimplementasikan. |
 | B11 | — | `Reposition` (`KMA2D.m:602`) memakai `MutRadius` **dua kali** (`MutRadius*MaxStep`, padahal `MaxStep` sudah mengandung `MutRadius`) → radius 0.25 range, tidak konsisten dengan `Mutation`. |
 | B12 | §2.10: individu baru "moved randomly" | Kode memakai **Lévy flight** `0.05*levy(1,Nvar,1.5)` (`KMA2D.m:587`); tidak disebut di paper. |
+| B13 | Eq. (10): stagnasi → `n + 5`, individu baru dari big male terbaik | Tahap dua dimulai tepat pada `n = 200 = MaxAdaPopSize`, sehingga baris 236–239 memaksa `NumAddPop = 0` dan cabang `n + a` **tidak terjangkau** sampai populasi sempat menyusut. Sebagai gantinya baris 249–253 menjalankan `Reposition` atas **seluruh** populasi — operator greedy yang tidak ada di manuskrip. Terukur: 409 langkah turun berbanding 57 langkah naik pada 33 run. |
+| B14 | Algoritma 1 menempatkan Eq. (10) di dalam loop utama, dijalankan tiap generasi sejajar dengan ketiga gerakan | Kode hanya menjalankannya di tahap dua, dan pada level loop yang berbeda dari ketiga gerakan (loop luar vs loop dalam per micro-swarm). Tahap satu berjalan 1.000 generasi tanpa adaptasi apa pun. §2.4 dan §3.1 manuskrip sejalan dengan kode, jadi yang keliru adalah Algoritma 1. |
 
 Yang **sudah sesuai**: mekanisme deteksi kompleksitas (100 generasi,
 `ImproveRate < 0.5`, maksimum 1000 generasi) cocok dengan §4 — meski absen dari
@@ -464,7 +631,7 @@ F15 dan F17–F23, `kma/` dan `kma-fixed/` memberi hasil yang praktis identik.
 ### E.8 Peringatan penafsiran
 
 - Kolom `all_fixed` **bukan** "algoritma paper yang dikerjakan dengan benar".
-  Seluruh penyimpangan B1–B12 masih ada di dalamnya — terutama B1 (inisialisasi
+  Seluruh penyimpangan B1–B14 masih ada di dalamnya — terutama B1 (inisialisasi
   di keempat sudut), yang membuat populasi awal hampir tanpa keragaman. Sebagian
   dari selisih yang terlihat berasal dari sana, bukan dari A1–A4.
 - Untuk **F7** gunakan `reported_best`, bukan `true_best`. F7 mengandung suku
@@ -516,5 +683,5 @@ waktu, karena nama fungsinya sama.
   `f_Rosenbrock(0)` pada A3 yang dihitung analitik.
 - Konfigurasi `all_fixed` **bukan** "algoritma paper yang dikerjakan dengan
   benar". Itu adalah kode terbit dengan empat cacat dihapus; seluruh penyimpangan
-  B1–B12 masih ada di dalamnya, dan sebagian dari selisih yang terlihat berasal
+  B1–B14 masih ada di dalamnya, dan sebagian dari selisih yang terlihat berasal
   dari sana (terutama B1, inisialisasi di sudut).

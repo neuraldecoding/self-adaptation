@@ -1,0 +1,36 @@
+# Jejak ukuran populasi tahap dua, dihasilkan oleh experiments/octave/selfadapt_probe.m
+# GNU Octave 10.3, kode kma/ tanpa modifikasi. F1-F13 dim 50, F14-F23 dimensi bawaannya.
+# down/up = jumlah langkah turun/naik AdaPopSize; gens_at_max = generasi pada n=200.
+fid=5 seed=1 stage1_gens=1000 stage2_gens=134 first=200 last=70 min=70 max=200 down=26 up=0 gens_at_max=23
+fid=5 seed=2 stage1_gens=1000 stage2_gens=131 first=200 last=75 min=75 max=200 down=25 up=0 gens_at_max=17
+fid=5 seed=3 stage1_gens=1000 stage2_gens=140 first=200 last=80 min=80 max=200 down=25 up=1 gens_at_max=11
+fid=7 seed=1 stage1_gens=1000 stage2_gens=76 first=200 last=200 min=200 max=200 down=0 up=0 gens_at_max=76
+fid=7 seed=2 stage1_gens=100 stage2_gens=94 first=200 last=200 min=200 max=200 down=0 up=0 gens_at_max=94
+fid=7 seed=3 stage1_gens=100 stage2_gens=97 first=200 last=200 min=200 max=200 down=0 up=0 gens_at_max=97
+fid=8 seed=1 stage1_gens=100 stage2_gens=171 first=200 last=65 min=65 max=200 down=28 up=1 gens_at_max=30
+fid=8 seed=2 stage1_gens=100 stage2_gens=127 first=200 last=140 min=140 max=200 down=12 up=0 gens_at_max=48
+fid=8 seed=3 stage1_gens=100 stage2_gens=180 first=200 last=45 min=45 max=200 down=32 up=1 gens_at_max=20
+fid=10 seed=1 stage1_gens=1000 stage2_gens=75 first=200 last=200 min=200 max=200 down=0 up=0 gens_at_max=75
+fid=10 seed=2 stage1_gens=1000 stage2_gens=75 first=200 last=200 min=200 max=200 down=0 up=0 gens_at_max=75
+fid=10 seed=3 stage1_gens=1000 stage2_gens=75 first=200 last=200 min=200 max=200 down=0 up=0 gens_at_max=75
+fid=12 seed=1 stage1_gens=1000 stage2_gens=132 first=200 last=90 min=90 max=200 down=22 up=0 gens_at_max=19
+fid=12 seed=2 stage1_gens=1000 stage2_gens=145 first=200 last=85 min=80 max=200 down=24 up=1 gens_at_max=10
+fid=12 seed=3 stage1_gens=1000 stage2_gens=141 first=200 last=80 min=80 max=200 down=25 up=1 gens_at_max=5
+fid=13 seed=1 stage1_gens=1000 stage2_gens=138 first=200 last=80 min=80 max=200 down=25 up=1 gens_at_max=13
+fid=13 seed=2 stage1_gens=1000 stage2_gens=282 first=200 last=20 min=20 max=200 down=38 up=2 gens_at_max=10
+fid=13 seed=3 stage1_gens=1000 stage2_gens=206 first=200 last=20 min=20 max=200 down=36 up=0 gens_at_max=11
+fid=15 seed=1 stage1_gens=100 stage2_gens=150 first=200 last=145 min=120 max=200 down=20 up=9 gens_at_max=18
+fid=15 seed=2 stage1_gens=100 stage2_gens=131 first=200 last=165 min=165 max=200 down=12 up=5 gens_at_max=15
+fid=15 seed=3 stage1_gens=100 stage2_gens=139 first=200 last=170 min=160 max=200 down=16 up=10 gens_at_max=5
+fid=16 seed=1 stage1_gens=100 stage2_gens=97 first=200 last=200 min=200 max=200 down=0 up=0 gens_at_max=97
+fid=16 seed=2 stage1_gens=100 stage2_gens=97 first=200 last=200 min=195 max=200 down=1 up=1 gens_at_max=89
+fid=16 seed=3 stage1_gens=100 stage2_gens=96 first=200 last=200 min=200 max=200 down=0 up=0 gens_at_max=96
+fid=20 seed=1 stage1_gens=100 stage2_gens=18 first=200 last=180 min=180 max=200 down=4 up=0 gens_at_max=2
+fid=20 seed=2 stage1_gens=100 stage2_gens=16 first=200 last=185 min=185 max=200 down=3 up=0 gens_at_max=2
+fid=20 seed=3 stage1_gens=100 stage2_gens=15 first=200 last=180 min=180 max=200 down=4 up=0 gens_at_max=2
+fid=21 seed=1 stage1_gens=100 stage2_gens=131 first=200 last=200 min=155 max=200 down=11 up=11 gens_at_max=30
+fid=21 seed=2 stage1_gens=100 stage2_gens=119 first=200 last=200 min=165 max=200 down=7 up=7 gens_at_max=45
+fid=21 seed=3 stage1_gens=1000 stage2_gens=100 first=200 last=200 min=180 max=200 down=5 up=5 gens_at_max=29
+fid=22 seed=1 stage1_gens=100 stage2_gens=31 first=200 last=180 min=180 max=200 down=4 up=0 gens_at_max=13
+fid=22 seed=2 stage1_gens=100 stage2_gens=27 first=200 last=195 min=195 max=200 down=1 up=0 gens_at_max=25
+fid=22 seed=3 stage1_gens=1000 stage2_gens=39 first=200 last=190 min=185 max=200 down=3 up=1 gens_at_max=16
