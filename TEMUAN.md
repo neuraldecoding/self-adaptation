@@ -30,7 +30,9 @@ Tiga lapis, saling menguatkan:
    `experiments/README.md`.
 
 Perbaikan minimal untuk A1–A4 ada di `kma-fixed/` (kode asli di `kma/` sengaja
-dibiarkan utuh sebagai baseline).
+dibiarkan utuh sebagai baseline). Konsep, taksonomi, dan pelajaran yang bisa
+dipakai di kasus lain dijelaskan di [README.md](README.md#mekanisme-self-adaptation);
+peta jalan pengembangannya di [ROADMAP.md](ROADMAP.md).
 
 ---
 
